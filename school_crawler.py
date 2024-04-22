@@ -487,7 +487,6 @@ class Cell_manager(Tk, General_methods, Draw_methods):
                     has_enemy = True
         '''
         self.create_map(difficulty)
-        print(self.map)
 
     def create_map(self, difficulty: int):
         '''
@@ -497,84 +496,15 @@ class Cell_manager(Tk, General_methods, Draw_methods):
         Creates a path through said grid from the spawn to the boss.
         Creates branches from that path and puts enemies at their ends.
         '''
-        match difficulty:
-            case 1:
-                size = 15
-            case 2:
-                size = 19
-            case 3:
-                size = 23
 
-        self.map = self.return_square_grid(size)
+        grid = self.return_square_grid(25)
+
+        for i in range(1000):
+            self.return_map(self.return_square_grid(25))
+            print(i)
+        self.map = self.return_map(grid)
+
         
-        size -= 1 # It's easier to work with this number
-        # Creates the starting point for the player and sets their coordinates
-        self.map[size-1][size//2] = 1
-        self.player.x = size-1
-        self.player.y = size//2
-        # Creates the starting room
-        for x in (-4, -3):
-            for y in (-1, 0, 1):
-                self.map[x][size//2+y] = CD['floor']
-        start_cell = [size-4, size//2] # Start for the pathfinder
-        # Creates the boss room
-        boss_room_y = randint(2, size-2) 
-        for a, b in zip((1, 2, 3), (CD['boss'], CD['door'], CD['floor'])):
-            self.map[a][boss_room_y] = b
-        goal_cell = [4, boss_room_y] # Goal for the pathfinder
-        path = [start_cell, goal_cell] # A list containing the goal points for the pathfinder
-        # Creates target cells for the path finder other than the end cell
-        for i in range((size-6)//4):
-            path.insert(-1, [size-randint(5+4*i, 6+4*i), randint(1, size-1)])
-        while len(path) != 1: # While there are still points to get to
-            distance_to_target = path[0][0]-path[1][0]+abs(path[0][1]-path[1][1]) # Calculates the distance from the current position to the target cell
-            path_branch_point = -1
-            if distance_to_target > 2: #  Determines the point in the path where there will be a branch if the distance is more than 2
-                path_branch_point = randint(1, distance_to_target)
-            while True:
-                self.map[path[0][0]][path[0][1]] = 1
-                distance_to_target = path[0][0]-path[1][0]+abs(path[0][1]-path[1][1]) # Updates distance to target point
-                if distance_to_target == path_branch_point: # Executes, when the pathfinder gets to the branching point
-                    try:
-                        path.insert(0, path[0]) # Insert new cell coordinates into the list used for the path branches
-                        for a in range(3): # Branch can be extended at most 3 times
-                            direction = choice(DIRECTIONS)
-                            for b in range(2): # Each part of the branch is at most 2 cells long
-                                match direction: # Find the next cell for each direction
-                                    case 'north':
-                                        next_cell = (path[0][0]-1, path[0][1])
-                                    case 'east':
-                                        next_cell = (path[0][0]-1, path[0][1])
-                                    case 'south':
-                                        next_cell = (path[0][0]-1, path[0][1])
-                                    case 'west':
-                                        next_cell = (path[0][0]-1, path[0][1])
-                                if next_cell[0] in (0, size) or next_cell[1] in (0, size): # If the next cell is on the edge of the map create an enemy and end branch
-                                    self.map[path[0][0]][path[0][1]] = CD['floor'] # TEST CD['enemy']
-                                    raise Loop_Break_Exception
-                                for c in (-1, 0, 1):
-                                    for d in (-1, 0, 1):
-                                        if self.map[next_cell[0]+c][next_cell[1]+d] in (2, 3, 4): # If there's a door or the boss anywhere around the next cell create an enemy and end branch
-                                            self.map[path[0][0]][path[0][1]] = CD['floor'] # TEST CD['enemy']
-                                            raise Loop_Break_Exception
-                                path[0] = next_cell
-                                if a == 2 and b == 1: # If this is the last loop put down an enemy else put down a path
-                                    self.map[path[0][0]][path[0][1]] = CD['floor'] # TEST CD['enemy']
-                                else:
-                                    self.map[path[0][0]][path[0][1]] = CD['floor']
-                    except Loop_Break_Exception:
-                        pass
-                    path.pop(0) # Remove the cell coordinates used for the path branches
-    
-                if path[0][0] > path[1][0]: # If the x coordinate is bigger than the target decrease the x coordinate
-                    path[0][0] -= 1
-                elif path[0][1] > path[1][1]: # If the y coordinate is bigger than the target decrease the y coordinate  
-                    path[0][1] -= 1
-                elif path[0][1] < path[1][1]: # If the y coordinate is amller than the target increase the y coordinate  
-                    path[0][1] += 1
-                elif path[0][0] == path[1][0] and path[0][1] == path[1][1]: # If you've reached the target point pop it from the list and break out of the loop
-                    path.pop(0)
-                    break
 
     def return_square_grid(self, length_of_side: int):
         grid=[]
@@ -584,6 +514,85 @@ class Cell_manager(Tk, General_methods, Draw_methods):
             for b in range(length_of_side):
                 grid[a].append(CD['wall'])
         return grid
+    
+    def return_map(self, grid):
+        size = len(grid)-1
+
+        # Creates the starting point for the player and sets their coordinates
+        grid[size-1][size//2] = 1
+        self.player.x = size-1
+        self.player.y = size//2
+        # Creates the starting room
+        for x in (-4, -3):
+            for y in (-1, 0, 1):
+                grid[x][size//2+y] = CD['floor']
+        start_cell = [size-4, size//2] # Start for the pathfinder
+        # Creates the boss room
+        boss_room_y = randint(2, size-2) 
+        for a, b in zip((1, 2, 3), (CD['boss'], CD['door'], CD['floor'])):
+            grid[a][boss_room_y] = b
+        goal_cell = [4, boss_room_y] # Goal for the pathfinder
+        path = [start_cell, goal_cell] # A list containing the goal points for the pathfinder
+
+        # Creates target cells for the path finder other than the end cell
+        for row in range((size-6)//4):
+            path.insert(-1, [size-(randint(0, 1)+5+4*row), randint(1, size-1)])
+            
+        while len(path) != 1:
+            distance_to_target = path[0][0]-path[1][0]+abs(path[0][1]-path[1][1]) # Calculates the distance from the current position to the target cell
+            path_branch_point = -1
+            if distance_to_target > 2: #  Determines the point in the path where there will be a branch if the distance is more than 2
+                path_branch_point = randint(1, distance_to_target)
+            while True:
+                grid[path[0][0]][path[0][1]] = 1
+                distance_to_target = path[0][0]-path[1][0]+abs(path[0][1]-path[1][1]) # Updates distance to target point
+                if distance_to_target == path_branch_point:
+                    self.create_path_branch(path[0], grid)
+                if path[0][0] > path[1][0]: # If the x coordinate is bigger than the target decrease the x coordinate
+                    path[0][0] -= 1
+                elif path[0][1] > path[1][1]: # If the y coordinate is bigger than the target decrease the y coordinate  
+                    path[0][1] -= 1
+                elif path[0][1] < path[1][1]: # If the y coordinate is amller than the target increase the y coordinate  
+                    path[0][1] += 1
+                elif path[0][0] == path[1][0] and path[0][1] == path[1][1]: # If you've reached the target point pop it from the list and break out of the loop
+                    path.pop(0)
+                    break
+        return grid
+
+    def create_path_branch(self, starting_cell: list, grid: list):
+        size = len(grid)-1
+        try:
+            current_cell_x = starting_cell[0]
+            current_cell_y = starting_cell[1]
+            next_cell_x = current_cell_x
+            next_cell_y = current_cell_y
+            for counter in range(3): # Branch can be extended at most 3 times
+                direction = choice(DIRECTIONS)
+                for counter in range(2): # Each part of the branch is at most 2 cells long
+                    match direction: # Find the next cell for each direction
+                        case 'north':
+                            next_cell_x = current_cell_x-1
+                        case 'east':
+                            next_cell_y = current_cell_y+1
+                        case 'south':
+                            next_cell_x = current_cell_x+1
+                        case 'west':
+                            next_cell_y = current_cell_y-1
+                    if next_cell_x in (0, size) or next_cell_y in (0, size): # If the next cell is on the edge of the map create an enemy and end branch
+                        grid[current_cell_x][current_cell_y] = CD['floor'] # TEST CD['enemy']
+                        raise Loop_Break_Exception
+                    # If there's a door or the boss anywhere around the next cell create an enemy and end branch
+                    for x in (-1, 0, 1):
+                        for y in (-1, 0, 1):
+                            if grid[next_cell_x+x][next_cell_y+y] in (2, 3, 4): 
+                                grid[current_cell_x][current_cell_y] = CD['floor'] # TEST CD['enemy']
+                                raise Loop_Break_Exception
+                    current_cell_x = next_cell_x
+                    current_cell_y = next_cell_y
+                    grid[current_cell_x][current_cell_y] = CD['floor']              
+                grid[current_cell_x][current_cell_y] = CD['floor'] # TEST CD['enemy']
+        except Loop_Break_Exception:
+            pass
 
     # Checks what kind of cell is at the given coordinates and draws a part of the player's view based on it and the keyword specifying it's place in the view
     def evaluate_cell(self, cell_num, keyword):
