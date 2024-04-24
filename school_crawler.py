@@ -30,10 +30,13 @@ class Loop_Break_Exception(Exception):
 
 # Class with methods used by a lot of other classes
 class General_methods():
-    def set_up_window(self, title: str, win_width: int, win_height: int):
-        self.geometry('%dx%d+%d+%d'%(win_width, win_height, (self.winfo_screenwidth()-win_width)//2, (self.winfo_screenheight()-win_height)//2))
-        self.configure(bg='white')
-        self.title(title)
+    def set_up_window(self, title: str, win_width: int, win_height: int, window=None):
+        if window == None:
+            window = self
+        window.geometry('%dx%d+%d+%d'%(win_width, win_height, (self.winfo_screenwidth()-win_width)//2, (self.winfo_screenheight()-win_height)//2))
+        window.configure(bg='white')
+        window.title(title)
+    
 
 
 # Methods used to draw the players vision
@@ -329,28 +332,76 @@ class Draw_methods():
 
 
 # Creates a window asking for the player's name
-class Get_char_name(Tk, General_methods):
+class Char_login(Tk, General_methods):
     def __init__(self):
         super().__init__()
-        self.set_up_window('Select your name', 300, 300)
-        self.char_name = StringVar()
-        global player_name
-        self.char_name.set(player_name)
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(0, weight=1)
-        self.rowconfigure(1, weight=1)
-        Entry(self, textvariable=self.char_name, background='black', foreground='white').grid(row=0)
-        Button(self, text='SELECT', borderwidth=0, background='black', foreground='white', command=lambda:[self.destroy(), Main_screen(self.char_name.get())]).grid(row=1)
-        self.mainloop()
-       
+        self.set_up_window('Login', 400, 400)
+        frame = Frame(self, background='white')
+        frame = self.return_configured_grid(frame)
+        frame = self.return_added_widgets(frame)
+        frame.place(relx=.5, rely=.5, anchor=CENTER)
 
+    def return_configured_grid(self, frame: Frame):
+        for i in range(3):
+            frame.rowconfigure(i, weight=1, uniform='rows')
+        for i in range(2):
+            frame.columnconfigure(i, weight=1)
+        return frame
+    
+    def return_added_widgets(self, frame):
+        Label(frame, text='Userame: ', background='white').grid(row=0, column=0, sticky=FILL_GRID)
+        player_name = StringVar()
+        Entry(frame, textvariable=player_name).grid(row=0, column=1, sticky=FILL_GRID)
+        Label(frame, text='Password: ', background='white').grid(row=1, column=0, sticky=FILL_GRID)
+        player_password = StringVar()
+        Entry(frame, textvariable=player_password).grid(row=1, column=1, sticky=FILL_GRID)
+        Button(frame, text='CONFIRM', command=lambda: self.check_if_login_valid(player_name, player_password)).grid(row=2, column=0, columnspan=2, sticky=FILL_GRID)
+        return frame
+
+    def check_if_login_valid(self, name, password):
+        if name.get() == '' or password.get() == '':
+            return
+        with open('assets/login.txt', 'r') as logins_file:
+            all_logins = logins_file.readlines()
+        temp = []
+        for login in all_logins:
+            temp.append(login
+                        .strip()
+                        .split(';'))
+        all_logins = temp
+        for login in all_logins:
+            if name.get() == login[0]:
+                if password.get() == login[1]:
+                    self.create_main_menu(name)
+                    return
+                return
+        self.confirm_new_login(name, password)
+        
+    def confirm_new_login(self, name, password):
+        confirm_window = Toplevel()
+        self.set_up_window('Confirm New Login', 400, 200, confirm_window)
+        Label(confirm_window, text='Confirm new login as:\nName: ' + name.get() + '\nPassword: ' + password.get(), background='white').pack(side=TOP)
+        Button(confirm_window, text='Yes', command=lambda: (confirm_window.destroy(), self.create_new_login(name, password), self.create_main_menu(name))).place(relx=.25, rely=.75, anchor=CENTER)
+        Button(confirm_window, text='No', command=lambda: confirm_window.destroy()).place(relx=.75, rely=.75, anchor=CENTER)
+        confirm_window.grab_set()
+
+
+    def create_new_login(self, name, password):
+        with open('assets/login.txt', 'a') as logins_file:
+            logins_file.write(name.get() + ';' + password.get())
+
+    def create_main_menu(self, name): # Set global player_name as name
+        global player_name
+        player_name = name.get()
+        self.destroy()
+        Main_screen()
+
+     
 # Creates the main menu screen
 class Main_screen(Tk, General_methods):
-    def __init__(self, char_name):
+    def __init__(self):
         super().__init__()
         self.set_up_window('Title screen', 600, 600)
-        global player_name
-        player_name = char_name
         self.cvs = Canvas(self, bg='white')
         self.cvs.pack(fill='both', expand=True)
         self.draw_background()
@@ -722,4 +773,5 @@ class GameWin(Tk, General_methods):
 
 
 # Start of the program
-Get_char_name()
+char_login = Char_login()
+char_login.mainloop()
