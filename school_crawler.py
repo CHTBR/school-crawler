@@ -1,6 +1,6 @@
 from tkinter import *
 from random import *
-import pathlib, os
+import os, time
 
 
 # Constants declarations
@@ -36,7 +36,13 @@ class General_methods():
         window.geometry('%dx%d+%d+%d'%(win_width, win_height, (self.winfo_screenwidth()-win_width)//2, (self.winfo_screenheight()-win_height)//2))
         window.configure(bg='white')
         window.title(title)
-    
+
+    def return_configured_grid(self, frame: Frame, row_num: int, col_num: int, row_w=1, col_w=1):
+        for i in range(row_num):
+            frame.rowconfigure(i, weight=row_w, uniform='rows')
+        for i in range(col_num):
+            frame.columnconfigure(i, weight=col_w, uniform='cols')
+        return frame
 
 
 # Methods used to draw the players vision
@@ -332,22 +338,15 @@ class Draw_methods():
 
 
 # Creates a window asking for the player's name
-class Char_login(Tk, General_methods):
+class Player_login(Tk, General_methods):
     def __init__(self):
         super().__init__()
         self.set_up_window('Login', 400, 400)
         frame = Frame(self, background='white')
-        frame = self.return_configured_grid(frame)
+        frame = self.return_configured_grid(frame, 3, 2)
         frame = self.return_added_widgets(frame)
         frame.place(relx=.5, rely=.5, anchor=CENTER)
 
-    def return_configured_grid(self, frame: Frame):
-        for i in range(3):
-            frame.rowconfigure(i, weight=1, uniform='rows')
-        for i in range(2):
-            frame.columnconfigure(i, weight=1)
-        return frame
-    
     def return_added_widgets(self, frame):
         Label(frame, text='Userame: ', background='white').grid(row=0, column=0, sticky=FILL_GRID)
         player_name = StringVar()
@@ -385,10 +384,9 @@ class Char_login(Tk, General_methods):
         Button(confirm_window, text='No', command=lambda: confirm_window.destroy()).place(relx=.75, rely=.75, anchor=CENTER)
         confirm_window.grab_set()
 
-
     def create_new_login(self, name, password):
         with open('assets/login.txt', 'a') as logins_file:
-            logins_file.write(name.get() + ';' + password.get())
+            logins_file.write(name.get() + ';' + password.get() + '\n')
 
     def create_main_menu(self, name): # Set global player_name as name
         global player_name
@@ -402,126 +400,81 @@ class Main_screen(Tk, General_methods):
     def __init__(self):
         super().__init__()
         self.set_up_window('Title screen', 600, 600)
-        self.cvs = Canvas(self, bg='white')
-        self.cvs.pack(fill='both', expand=True)
-        self.draw_background()
-        self.add_buttons()
-        self.add_animations()
-
-    # Creates the START, CONTROLS and QUIT buttons
-    def add_buttons(self):
+        Label(self, text='Welcome ' + player_name, bg='white').place(relx=.5, y=20, anchor=CENTER)
         frame = Frame(self, bg='white')
-        frame.columnconfigure(1, weight=1)
-        frame.rowconfigure(0, weight=1); frame.rowconfigure(1, weight=1); frame.rowconfigure(2, weight=1); frame.rowconfigure(3, weight=1)
+        frame = self.return_configured_grid(frame, 4, 1)
+        frame = self.return_added_widgets(frame)
         frame.place(relx=.5, rely=.5, anchor=CENTER)
-        global player_name
-        Label(self, text='Welcome ' + player_name, bg='white').place(relx=.5, y=20, anchor=CENTER) # Character greeting label
-        Button(frame, text='START', borderwidth=0, background='black', foreground='white', command=lambda:[self.destroy(), Get_difficulty()]).grid(row=1, sticky=EW) # Start button
-        Button(frame, text='CONTROLS', borderwidth=0, background='black', foreground='white', command=lambda: [self.destroy(), Controls()]).grid(row=2, sticky=EW) # Controls button
-        Button(frame, text='QUIT', borderwidth=0, background='black', foreground='white', command=self.destroy).grid(row=3, sticky=EW) # Quit button
+    
+    def return_configured_grid(self, frame: Frame, row_num: int, col_num: int, row_w=1, col_w=1):
+        for i in range(row_num):
+            frame.rowconfigure(i, weight=row_w, uniform='rows')
+        for i in range(col_num):
+            frame.columnconfigure(i, weight=col_w, uniform='cols')
+        return frame
+    
+    def return_added_widgets(self, frame: Frame):
+        Button(frame, text='START', command=self.start_game).grid(row=0, column=0, sticky=FILL_GRID)
+        Button(frame, text='LEADERBOARDS', command=self.choose_leaderboard).grid(row=1, column=0, sticky=FILL_GRID)
+        Button(frame, text='CREDITS', command=self.show_credits).grid(row=2, column=0, sticky=FILL_GRID)
+        Button(frame, text='LOG OUT', command=self.create_player_login).grid(row=3, column=0, sticky=FILL_GRID)
+        return frame
+    
+    def choose_leaderboard(self):
+        self.leaderboard_list_window = Toplevel()
+        self.set_up_window('Leaderboards', 500, 500, self.leaderboard_list_window)
+        self.leaderboard_list_window = self.return_configured_grid(self.leaderboard_list_window, 3, 1, 0)
+        Button(self.leaderboard_list_window, text='Biology', command=lambda: self.show_leaderboard('biology')).grid(row=0, column=0, sticky=FILL_GRID)
+        Button(self.leaderboard_list_window, text='Chemistry', command=lambda: self.show_leaderboard('chemistry')).grid(row=1, column=0, sticky=FILL_GRID)
+        Button(self.leaderboard_list_window, text='Physics', command=lambda: self.show_leaderboard('physics')).grid(row=2, column=0, sticky=FILL_GRID)
+        self.leaderboard_list_window.grab_set()
 
-    # Creates the buttons
-    def draw_background(self):
-        self.cvs.create_polygon(
-            300, 600,
-            120, 50,
-            300, 126,
-            width=0, fill='#C8E6C9'
-        )
-        self.cvs.create_polygon(
-            300, 600,
-            450, 387,
-            300, 126,
-            width=0, fill='#FFA8F9'
-        )
-        self.cvs.pack()
+    def show_leaderboard(self, category: str):
+        for widget in self.leaderboard_list_window.winfo_children():
+            widget.destroy()
+        self.leaderboard_list_window = self.return_configured_grid(self.leaderboard_list_window, 12, 2)
+        list_header_lbl = Label(self.leaderboard_list_window, text=category.capitalize(), borderwidth=2, relief='solid').grid(row=0, column=0, columnspan=2, sticky=FILL_GRID)
+        leaderboard_list = self.return_leaderboard_list(category)
+        for i in range(10):
+            player_name_lbl = Label(self.leaderboard_list_window, text=str(leaderboard_list[i][0]), borderwidth=1, relief='solid').grid(row=i+1, column=0, sticky=FILL_GRID)
+            player_score_lbl = Label(self.leaderboard_list_window, text=str(leaderboard_list[i][1]), borderwidth=1, relief='solid').grid(row=i+1, column=1, sticky=FILL_GRID)
+        return_button = Button(self.leaderboard_list_window, text='BACK', command=lambda: [self.leaderboard_list_window.destroy(), self.choose_leaderboard()]).grid(row=11, column=0, columnspan=2, sticky=FILL_GRID)
 
-    # Adds animaions to the background
-    def add_animations(self):
-        multiplier = -1
-        self.cvs.create_polygon(
-            495, 30,
-            495, 197,
-            406, 143,
-            width=0, fill='#93D1C9', tags='upper_left_crystal'
-        )
-        self.cvs.create_polygon(
-            500, 88,
-            500, 255,
-            583, 201,
-            width=0, fill='#71F9E8', tags='upper_right_crystal'
-        )
-        try:
-            # The while True loop will try to access the cvs even after it's been destroyed and a new window has been displayed (for example after pressing the START or CONTROLS buttons)
-            # So I raise an exception to break out of the loop but print the exception type in case it's something unexpected
-            while True:
-                multiplier=-multiplier
-                for i in range(80):
-                    self.cvs.move('upper_left_crystal', 0, multiplier)
-                    self.cvs.move('upper_right_crystal', 0, -multiplier)
-                    self.cvs.after(50)
-                    self.cvs.update()
+    def return_leaderboard_list(self, category: str):
+        with open(os.path.join('assets', category, 'leaderboard.txt')) as leaderboard:
+            leaderboard_list = leaderboard.readlines()
+        temp = []
+        for entry in leaderboard_list:
+            temp.append(entry
+                        .strip()
+                        .split(';'))
+        leaderboard_list = temp
+        return leaderboard_list
 
-        except Exception as e:
-            print(e)
+    def show_credits(self):
+        credits_window = Toplevel()
+        self.set_up_window('Credits', 500, 500, credits_window)
+        Label(credits_window, background='white',
+              text=
+'''
+Everything
+Filip Popelka
+''').pack(side=TOP)
+        credits_window.grab_set()
 
+    def create_player_login(self):
+        self.destroy()
+        Player_login()
 
-# Creates a window which explains the basic controls to the player
-class Controls(Tk, General_methods):
-    def __init__(self):
-        super().__init__()
-        self.set_up_window('Controls', 600, 600)
-
-        try: # Exception in case the images aren't available
-            current_dir = pathlib.Path(__file__).parent.resolve()
-            current_dir = os.path.join(current_dir, 'assets', 'controls')
-            self.controls_img = []
-            for i in range(8):
-                i+=1
-                self.controls_img.append(PhotoImage(file=os.path.join(current_dir, 'controls' + str(i) + '.png')))
-        except Exception as e:
-            print(e)
-            input('Missing assets, please download again or unzip the files. Press the <Enter> key to terminate.')
-        self.current_image_num = 0
-        self.current_image = Label(self, image=self.controls_img[self.current_image_num])
-        self.current_image.place(relx=.5, rely=.5, anchor=CENTER)
-        self.next_btn = Button(self, text='NEXT', font='Helvetica 30', command=self.next_image)
-        self.next_btn.place(x=520, y=550, anchor=CENTER)
-
-    # Switches to the next image and returns to the Main_screen after the last one
-    def next_image(self):
-        self.current_image_num += 1
-        self.current_image.config(image=self.controls_img[self.current_image_num])
-        if self.current_image_num > 6:
-            global player_name
-            self.next_btn.config(text='END', command=lambda: [self.destroy(), Main_screen(player_name)])
-
-
-# Creates a window to get the difficulty level for this game
-class Get_difficulty(Tk, General_methods):
-    def __init__(self):
-        super().__init__()
-        self.set_up_window('Difficulty setting', 300, 300)
-        self.difficulty = IntVar()
-        self.difficulty.set(1)
-        rad_txt = ('Easy', 'Normal', 'Hard')
-        self.columnconfigure(0, weight=1)
-        for i in range(4):
-            self.rowconfigure(i, weight=1)
-        for i in range(3):
-            Radiobutton(self, text=rad_txt[i], value=i+1, variable=self.difficulty, background='black', foreground='white', borderwidth=0).grid(row=i, column=0, sticky=FILL_GRID)
-        Button(text='SELECT', background='black', foreground='white', borderwidth=0, command=self.start_game).grid(row=3, column=0, sticky=FILL_GRID)
-
-    # Inititializes all the classes needed for the game
     def start_game(self):
         self.destroy()
-        game_manager = Cell_manager(self.difficulty.get())
+        game_manager = Cell_manager()
         Player(game_manager)
 
 
 # Creates the game map and creates a window displaying what the player sees
 class Cell_manager(Tk, General_methods, Draw_methods):
-    def __init__(self, difficulty):
+    def __init__(self):
         super().__init__()
         self.set_up_window('Dungeon', 600, 600)
         self.cvs = Canvas(self, bg='black')
@@ -537,9 +490,9 @@ class Cell_manager(Tk, General_methods, Draw_methods):
                 if 3 in self.map[x]:
                     has_enemy = True
         '''
-        self.create_map(difficulty)
+        self.create_map()
 
-    def create_map(self, difficulty: int):
+    def create_map(self):
         '''
         Function for creating a game map
 
@@ -715,6 +668,10 @@ class Player():
         self.cell_manager.bind_all('w', self.move_forward)
         self.cell_manager.bind_all('a', self.turn_left)
         self.cell_manager.bind_all('d', self.turn_right)
+        self.cell_manager.bind_all('<Up>', self.move_forward)
+        self.cell_manager.bind_all('<Left>', self.turn_left)
+        self.cell_manager.bind_all('<Right>', self.turn_right)
+
 
     # Gives arguments to the cell_managers dwaw_view method
     def draw_view(self):
@@ -773,5 +730,9 @@ class GameWin(Tk, General_methods):
 
 
 # Start of the program
+''' TEST
 char_login = Char_login()
 char_login.mainloop()
+'''
+main_screen = Main_screen()
+main_screen.mainloop()
