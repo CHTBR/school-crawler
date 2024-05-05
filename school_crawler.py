@@ -189,17 +189,13 @@ class Game_manager(Tk, General_methods, Drawing_functions):
         self.set_up_window('Dungeon', 600, 600)
         self.set_up_cvs()
         self.player = Player_controler
-
-        ''' TEST while I don't generate enemies on the map
-        has_enemy = False
-        while not has_enemy: # Checks whether there are any enemies on the map, if not (happens only about 15 times in a thousand and is too hard to fix) generates a new one
-            self.create_map(difficulty)
-            has_enemy = False
+        has_question = False
+        while not has_question:
+            self.create_map()
+            has_question = False
             for x in range(len(self.map)):
-                if 3 in self.map[x]:
-                    has_enemy = True
-        '''
-        self.create_map()
+                if CD['question'] in self.map[x]:
+                    has_question = True
 
     def get_images(self):
         self.img = PhotoImage(file='assets/tmp.png', width=200, height=200)
@@ -232,15 +228,6 @@ class Game_manager(Tk, General_methods, Drawing_functions):
 
     def return_map(self, grid):
         size = len(grid)-1
-
-        # Creates the starting point for the player and sets their coordinates
-        grid[size-1][size//2] = 1
-        self.player.x = size-1
-        self.player.y = size//2
-        # Creates the starting room
-        for x in (-4, -3):
-            for y in (-1, 0, 1):
-                grid[x][size//2+y] = CD['floor']
         start_cell = [size-4, size//2] # Start for the pathfinder
         # Creates the boss room
         boss_room_y = randint(2, size-2) 
@@ -263,6 +250,9 @@ class Game_manager(Tk, General_methods, Drawing_functions):
                 distance_to_target = path[0][0]-path[1][0]+abs(path[0][1]-path[1][1]) # Updates distance to target point
                 if distance_to_target == path_branch_point:
                     self.create_path_branch(path[0], grid)
+                    path_branch_point = -1
+                    if distance_to_target > 2: #  Determines the point in the path where there will be a branch if the distance is more than 2
+                        path_branch_point = randint(1, distance_to_target)
                 if path[0][0] > path[1][0]: # If the x coordinate is bigger than the target decrease the x coordinate
                     path[0][0] -= 1
                 elif path[0][1] > path[1][1]: # If the y coordinate is bigger than the target decrease the y coordinate  
@@ -272,17 +262,32 @@ class Game_manager(Tk, General_methods, Drawing_functions):
                 elif path[0][0] == path[1][0] and path[0][1] == path[1][1]: # If you've reached the target point pop it from the list and break out of the loop
                     path.pop(0)
                     break
+        # Creates the starting point for the player and sets their coordinates
+        grid[size-1][size//2] = CD['floor']
+        self.player.x = size-1
+        self.player.y = size//2
+        # Creates the starting room
+        for x in (-4, -3):
+            for y in (-1, 0, 1):
+                grid[x][size//2+y] = CD['floor']
         return grid
 
     def create_path_branch(self, starting_cell: list, grid: list):
         size = len(grid)-1
+        direction = choice(DIRECTIONS)
         try:
             current_cell_x = starting_cell[0]
             current_cell_y = starting_cell[1]
             next_cell_x = current_cell_x
             next_cell_y = current_cell_y
-            for counter in range(5): # Branch can be extended at most 3 times
-                direction = choice(DIRECTIONS)
+            for counter in range(4): # Branch can be extended at most 3 times
+                for i in grid: # TEST
+                    print(i)
+                print('')
+                tmp_direction = choice(DIRECTIONS)
+                while (DIRECTIONS.index(tmp_direction)+2)%4 == DIRECTIONS.index(direction): # If new direction is opposite of current
+                    tmp_direction = choice(DIRECTIONS)
+                direction = tmp_direction
                 for counter in range(2): # Each part of the branch is at most 2 cells long
                     match direction: # Find the next cell for each direction
                         case 'north':
@@ -299,15 +304,15 @@ class Game_manager(Tk, General_methods, Drawing_functions):
                     # If there's a door or the boss anywhere around the next cell create an enemy and end branch
                     for x in (-1, 0, 1):
                         for y in (-1, 0, 1):
-                            if grid[next_cell_x+x][next_cell_y+y] in (2, 3, 4): 
+                            if grid[next_cell_x+x][next_cell_y+y] in (2, 4): 
                                 grid[current_cell_x][current_cell_y] = CD['question']
                                 raise Loop_Break_Exception
                     current_cell_x = next_cell_x
                     current_cell_y = next_cell_y
                     grid[current_cell_x][current_cell_y] = CD['floor']              
-                grid[current_cell_x][current_cell_y] = CD['question']
+            grid[current_cell_x][current_cell_y] = CD['question']
         except Loop_Break_Exception:
-            pass
+            print('BREAK') # TEST
 
     # Finds the coordinates of the cells in the players view
     def draw_view(self, player_x, player_y, player_direction):
@@ -333,8 +338,7 @@ class Game_manager(Tk, General_methods, Drawing_functions):
             case 2: # Floor
                 self.door(keyword)
             case 3: # Enemy
-                self.image(keyword)
-                
+                self.image(keyword)      
 
     def evaluate_front_cells_north_south(self, player_x: int, player_y: int, forward: int, left: int, right: int):
         if self.map[player_x+forward][player_y] in (1, 3, 4):
@@ -390,9 +394,11 @@ class Game_manager(Tk, General_methods, Drawing_functions):
         return Question(current_question[0], current_question[1], current_question[2:])
     
     def correct_answer(self):
+        print('correct')
         self.repair_map_view()
 
     def incorrect_answer(self):
+        print('incorrect')
         self.repair_map_view()
 
     def repair_map_view(self):
