@@ -1,7 +1,8 @@
 from tkinter import *
 from random import choice
 
-FILL_GRID = N+S+E+W
+
+# Constants declarations
 WALL_COLOR = choice(('#FF9C07', '#FFA8F9', '#90AF90'))
 DOOR_OUTLIER_COLOR = '#404040'
 DOOR_WOOD_COLOR = '#853411'

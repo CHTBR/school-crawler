@@ -4,17 +4,15 @@ from tkinter import *
 from random import *
 import os
 
+
 # Constants declarations
 DIRECTIONS = ['north', 'east', 'south', 'west']
 FILL_GRID = N+S+E+W
-WALL_COLOR = choice(('#FF9C07', '#FFA8F9', '#90AF90'))
-DOOR_OUTLIER_COLOR = '#404040'
-DOOR_WOOD_COLOR = '#853411'
 CELL_DESIGNATIONS = {
     'wall' : 0,
     'floor' : 1,
     'door' : 2,
-    'enemy' : 3,
+    'question' : 3,
     'boss' : 4
 }
 CD = CELL_DESIGNATIONS # Shorter name for use in code
@@ -124,19 +122,19 @@ class Main_screen(Tk, General_methods):
         return frame
     
     def return_added_widgets(self, frame: Frame):
-        Button(frame, text='START', command=self.start_game).grid(row=0, column=0, sticky=FILL_GRID)
-        Button(frame, text='LEADERBOARDS', command=self.choose_leaderboard).grid(row=1, column=0, sticky=FILL_GRID)
+        Button(frame, text='START', command=lambda: self.choose_category(self.start_game)).grid(row=0, column=0, sticky=FILL_GRID)
+        Button(frame, text='LEADERBOARDS', command=lambda: self.choose_category(self.show_leaderboard)).grid(row=1, column=0, sticky=FILL_GRID)
         Button(frame, text='CREDITS', command=self.show_credits).grid(row=2, column=0, sticky=FILL_GRID)
         Button(frame, text='LOG OUT', command=self.create_player_login).grid(row=3, column=0, sticky=FILL_GRID)
         return frame
     
-    def choose_leaderboard(self):
+    def choose_category(self, function):
         self.leaderboard_list_window = Toplevel()
-        self.set_up_window('Leaderboards', 500, 500, self.leaderboard_list_window)
+        self.set_up_window('Category', 500, 500, self.leaderboard_list_window)
         self.leaderboard_list_window = self.return_configured_grid(self.leaderboard_list_window, 3, 1, 0)
-        Button(self.leaderboard_list_window, text='Biology', command=lambda: self.show_leaderboard('biology')).grid(row=0, column=0, sticky=FILL_GRID)
-        Button(self.leaderboard_list_window, text='Chemistry', command=lambda: self.show_leaderboard('chemistry')).grid(row=1, column=0, sticky=FILL_GRID)
-        Button(self.leaderboard_list_window, text='Physics', command=lambda: self.show_leaderboard('physics')).grid(row=2, column=0, sticky=FILL_GRID)
+        Button(self.leaderboard_list_window, text='Biology', command=lambda: function('biology')).grid(row=0, column=0, sticky=FILL_GRID)
+        Button(self.leaderboard_list_window, text='Chemistry', command=lambda: function('chemistry')).grid(row=1, column=0, sticky=FILL_GRID)
+        Button(self.leaderboard_list_window, text='Physics', command=lambda: function('physics')).grid(row=2, column=0, sticky=FILL_GRID)
         self.leaderboard_list_window.grab_set()
 
     def show_leaderboard(self, category: str):
@@ -148,7 +146,7 @@ class Main_screen(Tk, General_methods):
         for i in range(10):
             player_name_lbl = Label(self.leaderboard_list_window, text=str(leaderboard_list[i][0]), borderwidth=1, relief='solid').grid(row=i+1, column=0, sticky=FILL_GRID)
             player_score_lbl = Label(self.leaderboard_list_window, text=str(leaderboard_list[i][1]), borderwidth=1, relief='solid').grid(row=i+1, column=1, sticky=FILL_GRID)
-        return_button = Button(self.leaderboard_list_window, text='BACK', command=lambda: [self.leaderboard_list_window.destroy(), self.choose_leaderboard()]).grid(row=11, column=0, columnspan=2, sticky=FILL_GRID)
+        return_button = Button(self.leaderboard_list_window, text='BACK', command=lambda: [self.leaderboard_list_window.destroy(), self.choose_category(self.show_leaderboard)]).grid(row=11, column=0, columnspan=2, sticky=FILL_GRID)
 
     def return_leaderboard_list(self, category: str):
         with open(os.path.join('assets', category, 'leaderboard.txt')) as leaderboard:
@@ -176,20 +174,20 @@ Filip Popelka
         self.destroy()
         Player_login()
 
-    def start_game(self):
+    def start_game(self, category):
         self.destroy()
-        game_manager = Cell_manager()
+        game_manager = Game_manager(category)
         Player_controler(game_manager)
 
 
 # Creates the game map and creates a window displaying what the player sees
-class Cell_manager(Tk, General_methods, Drawing_functions):
-    def __init__(self):
+class Game_manager(Tk, General_methods, Drawing_functions):
+    def __init__(self, category):
         super().__init__()
+        self.category = category
         self.get_images()
         self.set_up_window('Dungeon', 600, 600)
-        self.cvs = Canvas(self, bg='black')
-        self.cvs.pack(fill='both', expand=True)
+        self.set_up_cvs()
         self.player = Player_controler
 
         ''' TEST while I don't generate enemies on the map
@@ -207,6 +205,10 @@ class Cell_manager(Tk, General_methods, Drawing_functions):
         self.img = PhotoImage(file='assets/tmp.png', width=200, height=200)
         self.big_img = PhotoImage(file='assets/tmp_big.png', width=400, height=400)
 
+    def set_up_cvs(self):
+        self.cvs = Canvas(self, bg='black')
+        self.cvs.pack(fill='both', expand=True)
+
     def create_map(self):
         '''
         Function for creating a game map
@@ -217,7 +219,7 @@ class Cell_manager(Tk, General_methods, Drawing_functions):
         '''
 
         grid = self.return_square_grid(25)
-        self.map = self.return_map(grid)        
+        self.map = self.return_map(grid)
 
     def return_square_grid(self, length_of_side: int):
         grid=[]
@@ -292,18 +294,18 @@ class Cell_manager(Tk, General_methods, Drawing_functions):
                         case 'west':
                             next_cell_y = current_cell_y-1
                     if next_cell_x in (0, size) or next_cell_y in (0, size): # If the next cell is on the edge of the map create an enemy and end branch
-                        grid[current_cell_x][current_cell_y] = CD['enemy']
+                        grid[current_cell_x][current_cell_y] = CD['question']
                         raise Loop_Break_Exception
                     # If there's a door or the boss anywhere around the next cell create an enemy and end branch
                     for x in (-1, 0, 1):
                         for y in (-1, 0, 1):
                             if grid[next_cell_x+x][next_cell_y+y] in (2, 3, 4): 
-                                grid[current_cell_x][current_cell_y] = CD['enemy']
+                                grid[current_cell_x][current_cell_y] = CD['question']
                                 raise Loop_Break_Exception
                     current_cell_x = next_cell_x
                     current_cell_y = next_cell_y
                     grid[current_cell_x][current_cell_y] = CD['floor']              
-                grid[current_cell_x][current_cell_y] = CD['enemy']
+                grid[current_cell_x][current_cell_y] = CD['question']
         except Loop_Break_Exception:
             pass
 
@@ -356,15 +358,60 @@ class Cell_manager(Tk, General_methods, Drawing_functions):
         self.evaluate_cell(self.map[player_x+left][player_y], 'Left')
         self.evaluate_cell(self.map[player_x+right][player_y], 'Right')
 
+    def show_question_menu(self):
+        self.cvs.destroy()
+        question = self.return_question()
+        self.rowconfigure(0, weight=4)
+        for i in range(2):
+            self.rowconfigure(i+1, weight=1)
+        for i in range(2):
+            self.columnconfigure(i, weight=1, uniform='cols')
+        Label(text=question.question).grid(row=0, column=0, columnspan=2, sticky=FILL_GRID)
+        answers = question.incorrect_answers
+        answers.append(question.correct_answer)
+        shuffle(answers); shuffle(answers); shuffle(answers)
+        commands = []
+        for i in range(4):
+            if answers[i] == question.correct_answer:
+                commands.append(self.correct_answer)
+            else:
+                commands.append(self.incorrect_answer)
+        
+        for current_answer, current_command, row_num, col_num in zip(answers, commands, (2, 1, 2, 1), (0, 0, 1, 1)):
+            Button(text=current_answer, command=current_command).grid(row=row_num, column=col_num, sticky=FILL_GRID)
+
+    def return_question(self):
+        with open(os.path.join('assets', self.category, 'questions.txt'), 'r') as questions_file:
+            all_questions = questions_file.readlines()
+        current_question = choice(all_questions)
+        current_question = (current_question
+                            .strip()
+                            .split(';'))
+        return Question(current_question[0], current_question[1], current_question[2:])
+    
+    def correct_answer(self):
+        self.repair_map_view()
+
+    def incorrect_answer(self):
+        self.repair_map_view()
+
+    def repair_map_view(self):
+        for child in self.winfo_children():
+            child.destroy()
+        self.set_up_cvs()
+        self.map[self.player.x][self.player.y] = CD['floor']
+        self.player.bind_keyboard()
+        self.player.draw_view()
+
 
 # Stores information about the player, binds keyboard inputs
 class Player_controler():
-    def __init__(self, cell_manager: Cell_manager):
+    def __init__(self, game_manager: Game_manager):
         global player_name
         self.name = player_name
-        # Initiating a cell_manager variable and giving it the Player_controler instance
-        self.cell_manager = cell_manager
-        self.cell_manager.player = self
+        # Initiating a game_manager variable and giving it the Player_controler instance
+        self.game_manager = game_manager
+        self.game_manager.player = self
         # Player position defaults
         self.direction = 'north'
         # Draw first screen + bind keys to functions
@@ -373,32 +420,56 @@ class Player_controler():
         
     # Binds keyboard inputs to their respective commands
     def bind_keyboard(self):
-        self.cell_manager.bind_all('w', self.move_forward)
-        self.cell_manager.bind_all('a', self.turn_left)
-        self.cell_manager.bind_all('d', self.turn_right)
-        self.cell_manager.bind_all('<Up>', self.move_forward)
-        self.cell_manager.bind_all('<Left>', self.turn_left)
-        self.cell_manager.bind_all('<Right>', self.turn_right)
+        self.game_manager.bind_all('w', self.move_forward)
+        self.game_manager.bind_all('a', self.turn_left)
+        self.game_manager.bind_all('d', self.turn_right)
+        self.game_manager.bind_all('<Up>', self.move_forward)
+        self.game_manager.bind_all('<Left>', self.turn_left)
+        self.game_manager.bind_all('<Right>', self.turn_right)
+    
+    def unbind_keyboard(self):
+        self.game_manager.unbind_all('w')
+        self.game_manager.unbind_all('a')
+        self.game_manager.unbind_all('d')
+        self.game_manager.unbind_all('<Up>')
+        self.game_manager.unbind_all('<Left>')
+        self.game_manager.unbind_all('<Right>')
 
     # Gives arguments to the cell_managers dwaw_view method
     def draw_view(self):
-        self.cell_manager.draw_view(self.x, self.y, self.direction)
+        self.game_manager.draw_view(self.x, self.y, self.direction)
 
     # Manages the players movement forward - 'W' key input
     def move_forward(self, bind):
         match self.direction:
             case 'north':
-                if self.cell_manager.map[self.x-1][self.y] == 1:
+                if self.game_manager.map[self.x-1][self.y] == CD['floor']:
                     self.x-=1
+                elif self.game_manager.map[self.x-1][self.y] == CD['question']:
+                    self.game_manager.map[self.x-1][self.y] = CD['floor']
+                    self.unbind_keyboard()
+                    self.game_manager.show_question_menu()
             case 'east':
-                if self.cell_manager.map[self.x][self.y+1] == 1:
+                if self.game_manager.map[self.x][self.y+1] == CD['floor']:
                     self.y+=1
+                elif self.game_manager.map[self.x][self.y+1] == CD['question']:
+                    self.game_manager.map[self.x][self.y+1]= CD['floor']
+                    self.unbind_keyboard()
+                    self.game_manager.show_question_menu()
             case 'south':
-                if self.cell_manager.map[self.x+1][self.y] == 1:
+                if self.game_manager.map[self.x+1][self.y] == CD['floor']:
                     self.x+=1
+                elif self.game_manager.map[self.x+1][self.y] == CD['question']:
+                    self.game_manager.map[self.x+1][self.y] = CD['floor']
+                    self.unbind_keyboard()
+                    self.game_manager.show_question_menu()
             case 'west':
-                if self.cell_manager.map[self.x][self.y-1] == 1:
+                if self.game_manager.map[self.x][self.y-1] == CD['floor']:
                     self.y-=1
+                elif self.game_manager.map[self.x][self.y-1] == CD['question']:
+                    self.game_manager.map[self.x][self.y-1] = CD['floor']
+                    self.unbind_keyboard()
+                    self.game_manager.show_question_menu()
         self.draw_view()
 
     # Manages the players 'D' key input
@@ -418,6 +489,13 @@ class Player_controler():
         self.draw_view()
 
 
+class Question():
+    def __init__(self, question: str, correct_answer: str, incorrect_answers: list):
+        self.question = question
+        self.correct_answer = correct_answer
+        self.incorrect_answers = incorrect_answers
+
+
 # Tells the player they have lost and returns to the main_screen
 class GameOver(Tk, General_methods):
     def __init__(self, char_name):
@@ -434,6 +512,7 @@ class GameWin(Tk, General_methods):
         self.set_up_window('YOU WON', 600, 600)
         self.config(bg='white')
         Button(self, text='TRY AGAIN?', font='Helvetica 50', bg='white', command=lambda: [self.destroy(), Main_screen(char_name)]).place(relx=.5, rely=.5, anchor=CENTER)
+
 
 if __name__ == '__main__':
     # Start of the program

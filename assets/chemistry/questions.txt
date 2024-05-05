@@ -1,0 +1,10 @@
+cheQuestion1;correct;wrong;wrong;wrong
+cheQuestion2;correct;wrong;wrong;wrong
+cheQuestion3;correct;wrong;wrong;wrong
+cheQuestion4;correct;wrong;wrong;wrong
+cheQuestion5;correct;wrong;wrong;wrong
+cheQuestion6;correct;wrong;wrong;wrong
+cheQuestion7;correct;wrong;wrong;wrong
+cheQuestion8;correct;wrong;wrong;wrong
+cheQuestion9;correct;wrong;wrong;wrong
+cheQuestion10;correct;wrong;wrong;wrong
