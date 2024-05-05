@@ -1,7 +1,6 @@
 from tkinter import *
 from random import *
-import os, time
-
+import os
 
 # Constants declarations
 DIRECTIONS = ['north', 'east', 'south', 'west']
@@ -36,6 +35,7 @@ class General_methods():
         window.geometry('%dx%d+%d+%d'%(win_width, win_height, (self.winfo_screenwidth()-win_width)//2, (self.winfo_screenheight()-win_height)//2))
         window.configure(bg='white')
         window.title(title)
+        window.resizable(width=False, height=False)
 
     def return_configured_grid(self, frame: Frame, row_num: int, col_num: int, row_w=1, col_w=1):
         for i in range(row_num):
@@ -240,101 +240,28 @@ class Draw_methods():
                     abs(base-545), 545,
                     width=0, fill=DOOR_OUTLIER_COLOR
                 )
-    
-    def enemy(self, keyword):
-        self.cvs.create_polygon(
-            246, 219,
-            257, 256,
-            276, 275,
-            311, 256,
-            303, 218,
-            281, 200,
-            width=0, fill='#FF8C00', tags='enemy'
-        )
-        self.cvs.create_polygon(
-            247, 292,
-            274, 327,
-            342, 246,
-            width=0, fill='#C8E6C9', tags='enemy'
-        )
-        self.cvs.create_polygon(
-            244, 307,
-            207, 378,
-            267, 325,
-            width=0, fill='#FF6BD8', tags='enemy'
-        )
-        self.cvs.create_polygon(
-            395, 201,
-            361, 250,
-            385, 289,
-            width=0, fill='#FFD971', tags='enemy'
-        )
-        self.cvs.create_polygon(
-            351, 254,
-            263, 348,
-            384, 306,
-            width=0, fill='#FFB3A6', tags='enemy'
-        )
-        self.cvs.create_oval(
-            315, 333,
-            382, 400,
-            width=0, fill='#ECFF5E', tags='enemy'
-        )
-    
-    def boss(self, keyword):
-        self.cvs.create_oval(
-            260, 260,
-            340, 340,
-            width=0, fill='#4400FF', tags='boss'
-        )
-        self.cvs.create_polygon(
-            300, 200,
-            280, 260,
-            320, 260,
-            width=0, fill='#D900FF', tags='boss'
-        )
-        self.cvs.create_polygon(
-            320, 340,
-            280, 340,
-            300, 400,
-            width=0, fill='#D900FF', tags='boss'
-        )
-        self.cvs.create_polygon(
-            340, 280,
-            340, 320,
-            400, 300,
-            width=0, fill='#FF9900', tags='boss'
-        )
-        self.cvs.create_polygon(
-            260, 280,
-            200, 300,
-            260, 320,
-            width=0, fill='#FF9900', tags='boss'
-        )
-        self.cvs.create_polygon(
-            371, 230,
-            315, 258,
-            343, 286,
-            width=0, fill='#008CFF', tags='boss'
-        )
-        self.cvs.create_polygon(
-            258, 315,
-            230, 371,
-            286, 343,
-            width=0, fill='#008CFF', tags='boss'
-        )
-        self.cvs.create_polygon(
-            229, 229,
-            258, 286,
-            286, 258,
-            width=0, fill='#1EFF00', tags='boss'
-        )
-        self.cvs.create_polygon(
-            343, 315,
-            315, 343,
-            371, 371,
-            width=0, fill='#1EFF00', tags='boss'
-        )
+
+    def image(self, keyword):
+        match keyword:
+            case keyword if 'Left' in keyword:
+                if '2Forward' in keyword:
+                    self.cvs.create_image(50, 300, anchor=CENTER, image=self.img)
+                elif 'Forward' in keyword:
+                    self.cvs.create_image(-75, 300, anchor=CENTER, image=self.big_img)
+                else:
+                    self.cvs.create_image(-25, 300, anchor=CENTER, image=self.big_img)
+            case keyword if 'Right' in keyword:
+                if '2Forward' in keyword:
+                    self.cvs.create_image(550, 300, anchor=CENTER, image=self.img)
+                elif 'Forward' in keyword:
+                    self.cvs.create_image(675, 300, anchor=CENTER, image=self.big_img)
+                else:
+                    self.cvs.create_image(625, 300, anchor=CENTER, image=self.big_img)
+            case _:
+                if '2Forward' == keyword:
+                    self.cvs.create_image(300, 300, anchor=CENTER, image=self.img)
+                else:
+                    self.cvs.create_image(300, 300, anchor=CENTER, image=self.big_img)
 
 
 # Creates a window asking for the player's name
@@ -469,17 +396,18 @@ Filip Popelka
     def start_game(self):
         self.destroy()
         game_manager = Cell_manager()
-        Player(game_manager)
+        Player_controler(game_manager)
 
 
 # Creates the game map and creates a window displaying what the player sees
 class Cell_manager(Tk, General_methods, Draw_methods):
     def __init__(self):
         super().__init__()
+        self.get_images()
         self.set_up_window('Dungeon', 600, 600)
         self.cvs = Canvas(self, bg='black')
         self.cvs.pack(fill='both', expand=True)
-        self.player = Player
+        self.player = Player_controler
 
         ''' TEST while I don't generate enemies on the map
         has_enemy = False
@@ -492,6 +420,10 @@ class Cell_manager(Tk, General_methods, Draw_methods):
         '''
         self.create_map()
 
+    def get_images(self):
+        self.img = PhotoImage(file='assets/tmp.png', width=200, height=200)
+        self.big_img = PhotoImage(file='assets/tmp_big.png', width=400, height=400)
+
     def create_map(self):
         '''
         Function for creating a game map
@@ -502,13 +434,7 @@ class Cell_manager(Tk, General_methods, Draw_methods):
         '''
 
         grid = self.return_square_grid(25)
-
-        for i in range(1000):
-            self.return_map(self.return_square_grid(25))
-            print(i)
-        self.map = self.return_map(grid)
-
-        
+        self.map = self.return_map(grid)        
 
     def return_square_grid(self, length_of_side: int):
         grid=[]
@@ -518,7 +444,7 @@ class Cell_manager(Tk, General_methods, Draw_methods):
             for b in range(length_of_side):
                 grid[a].append(CD['wall'])
         return grid
-    
+
     def return_map(self, grid):
         size = len(grid)-1
 
@@ -570,7 +496,7 @@ class Cell_manager(Tk, General_methods, Draw_methods):
             current_cell_y = starting_cell[1]
             next_cell_x = current_cell_x
             next_cell_y = current_cell_y
-            for counter in range(3): # Branch can be extended at most 3 times
+            for counter in range(5): # Branch can be extended at most 3 times
                 direction = choice(DIRECTIONS)
                 for counter in range(2): # Each part of the branch is at most 2 cells long
                     match direction: # Find the next cell for each direction
@@ -583,32 +509,20 @@ class Cell_manager(Tk, General_methods, Draw_methods):
                         case 'west':
                             next_cell_y = current_cell_y-1
                     if next_cell_x in (0, size) or next_cell_y in (0, size): # If the next cell is on the edge of the map create an enemy and end branch
-                        grid[current_cell_x][current_cell_y] = CD['floor'] # TEST CD['enemy']
+                        grid[current_cell_x][current_cell_y] = CD['enemy']
                         raise Loop_Break_Exception
                     # If there's a door or the boss anywhere around the next cell create an enemy and end branch
                     for x in (-1, 0, 1):
                         for y in (-1, 0, 1):
                             if grid[next_cell_x+x][next_cell_y+y] in (2, 3, 4): 
-                                grid[current_cell_x][current_cell_y] = CD['floor'] # TEST CD['enemy']
+                                grid[current_cell_x][current_cell_y] = CD['enemy']
                                 raise Loop_Break_Exception
                     current_cell_x = next_cell_x
                     current_cell_y = next_cell_y
                     grid[current_cell_x][current_cell_y] = CD['floor']              
-                grid[current_cell_x][current_cell_y] = CD['floor'] # TEST CD['enemy']
+                grid[current_cell_x][current_cell_y] = CD['enemy']
         except Loop_Break_Exception:
             pass
-
-    # Checks what kind of cell is at the given coordinates and draws a part of the player's view based on it and the keyword specifying it's place in the view
-    def evaluate_cell(self, cell_num, keyword):
-        match cell_num:
-            case 0: # Wall
-                self.wall(keyword)
-            case 2: # Floor
-                self.door(keyword)
-            case 3: # Enemy
-                self.enemy(keyword)
-            case 4: # Boss
-                self.boss(keyword)
 
     # Finds the coordinates of the cells in the players view
     def draw_view(self, player_x, player_y, player_direction):
@@ -625,6 +539,17 @@ class Cell_manager(Tk, General_methods, Draw_methods):
             case 'west':
                 self.evaluate_front_cells_east_west(player_x, player_y, forward=-1, left=1, right=-1)
         self.cvs.update()
+        
+    # Checks what kind of cell is at the given coordinates and draws a part of the player's view based on it and the keyword specifying it's place in the view
+    def evaluate_cell(self, cell_num, keyword):
+        match cell_num:
+            case 0: # Wall
+                self.wall(keyword)
+            case 2: # Floor
+                self.door(keyword)
+            case 3: # Enemy
+                self.image(keyword)
+                
 
     def evaluate_front_cells_north_south(self, player_x: int, player_y: int, forward: int, left: int, right: int):
         if self.map[player_x+forward][player_y] in (1, 3, 4):
@@ -650,11 +575,11 @@ class Cell_manager(Tk, General_methods, Draw_methods):
 
 
 # Stores information about the player, binds keyboard inputs
-class Player():
+class Player_controler():
     def __init__(self, cell_manager: Cell_manager):
         global player_name
         self.name = player_name
-        # Initiating a cell_manager variable and giving it the Player instance
+        # Initiating a cell_manager variable and giving it the Player_controler instance
         self.cell_manager = cell_manager
         self.cell_manager.player = self
         # Player position defaults
@@ -671,7 +596,6 @@ class Player():
         self.cell_manager.bind_all('<Up>', self.move_forward)
         self.cell_manager.bind_all('<Left>', self.turn_left)
         self.cell_manager.bind_all('<Right>', self.turn_right)
-
 
     # Gives arguments to the cell_managers dwaw_view method
     def draw_view(self):

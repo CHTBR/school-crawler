@@ -1,0 +1,11 @@
+player1;pswd
+player2;pswd
+player3;pswd
+player4;pswd
+player5;pswd
+player6;pswd
+player7;pswd
+player8;pswd
+player9;pswd
+player10;pswd
+timon;gft
