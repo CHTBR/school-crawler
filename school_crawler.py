@@ -188,22 +188,16 @@ class Game_manager(Tk, General_methods, Drawing_functions):
         self.get_images()
         self.set_up_window('Dungeon', 600, 600)
         self.set_up_cvs()
+        self.score = 5002
+        self.score_text = StringVar()
+        self.start_decrease_score_every_second()
+        self.set_up_ui()
         self.player = Player_controler
-        has_question = False
-        while not has_question:
-            self.create_map()
-            has_question = False
-            for x in range(len(self.map)):
-                if CD['question'] in self.map[x]:
-                    has_question = True
-
+        self.map = self.create_map()
+        
     def get_images(self):
         self.img = PhotoImage(file='assets/tmp.png', width=200, height=200)
         self.big_img = PhotoImage(file='assets/tmp_big.png', width=400, height=400)
-
-    def set_up_cvs(self):
-        self.cvs = Canvas(self, bg='black')
-        self.cvs.pack(fill='both', expand=True)
 
     def create_map(self):
         '''
@@ -215,7 +209,11 @@ class Game_manager(Tk, General_methods, Drawing_functions):
         '''
 
         grid = self.return_square_grid(25)
-        self.map = self.return_map(grid)
+        while True:
+            tmp_grid = self.return_map(grid)
+            for x in range(len(tmp_grid)):
+                if CD['question'] in tmp_grid[x]:
+                    return tmp_grid
 
     def return_square_grid(self, length_of_side: int):
         grid=[]
@@ -314,6 +312,18 @@ class Game_manager(Tk, General_methods, Drawing_functions):
         except Loop_Break_Exception:
             print('BREAK') # TEST
 
+    def set_up_ui(self):
+        Label(self, textvariable=self.score_text, background='black', font='Helvetica 30', foreground='yellow').place(x=300, y=30, anchor=CENTER)
+
+    def start_decrease_score_every_second(self):
+        self.score -= 2
+        self.score_text.set('Score: ' + str(self.score))
+        self.after(200, self.start_decrease_score_every_second)
+    
+    def set_up_cvs(self):
+        self.cvs = Canvas(self, bg='black')
+        self.cvs.pack(fill='both', expand=True)
+
     # Finds the coordinates of the cells in the players view
     def draw_view(self, player_x, player_y, player_direction):
         self.cvs.delete('all')
@@ -408,6 +418,7 @@ class Game_manager(Tk, General_methods, Drawing_functions):
         self.map[self.player.x][self.player.y] = CD['floor']
         self.player.bind_keyboard()
         self.player.draw_view()
+        self.set_up_ui()
 
 
 # Stores information about the player, binds keyboard inputs
