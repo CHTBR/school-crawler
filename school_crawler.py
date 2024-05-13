@@ -13,7 +13,7 @@ CELL_DESIGNATIONS = {
     'floor' : 1,
     'door' : 2,
     'question' : 3,
-    'boss' : 4
+    'game end' : 4
 }
 CD = CELL_DESIGNATIONS # Shorter name for use in code
 
@@ -188,12 +188,19 @@ class Game_manager(Tk, General_methods, Drawing_functions):
         self.get_images()
         self.set_up_window('Dungeon', 600, 600)
         self.set_up_cvs()
+        self.player = Player_controler
+        self.question_count = 0
+        self.question_text = StringVar()
+        self.map = self.create_map()
+        for a in range(len(self.map)):
+            for b in range(len(self.map[a])):
+                if self.map[a][b] == 3:
+                    self.question_count += 1
+        self.question_text.set('Questions: ' + str(self.question_count))
         self.score = 5002
         self.score_text = StringVar()
-        self.start_decrease_score_every_second()
+        self.refresh_variables()
         self.set_up_ui()
-        self.player = Player_controler
-        self.map = self.create_map()
         
     def get_images(self):
         self.img = PhotoImage(file='assets/tmp.png', width=200, height=200)
@@ -229,7 +236,9 @@ class Game_manager(Tk, General_methods, Drawing_functions):
         start_cell = [size-4, size//2] # Start for the pathfinder
         # Creates the boss room
         boss_room_y = randint(2, size-2) 
-        for a, b in zip((1, 2, 3), (CD['boss'], CD['door'], CD['floor'])):
+        for a, b in zip((1, 2, 3), (CD['game end'], CD['door'], CD['floor'])):
+            if b == CD['door']:
+                self.door_coords = [a, boss_room_y]
             grid[a][boss_room_y] = b
         goal_cell = [4, boss_room_y] # Goal for the pathfinder
         path = [start_cell, goal_cell] # A list containing the goal points for the pathfinder
@@ -314,11 +323,17 @@ class Game_manager(Tk, General_methods, Drawing_functions):
 
     def set_up_ui(self):
         Label(self, textvariable=self.score_text, background='black', font='Helvetica 30', foreground='yellow').place(x=300, y=30, anchor=CENTER)
+        Label(self, textvariable=self.question_text, background='black', font='Helvetica 30', foreground='yellow').place(x=300, y=70, anchor=CENTER)
 
-    def start_decrease_score_every_second(self):
-        self.score -= 2
+    def refresh_variables(self):
+        if self.score <= 0:
+            self.score = 0
+        else:
+            self.score -= 2
         self.score_text.set('Score: ' + str(self.score))
-        self.after(200, self.start_decrease_score_every_second)
+        if True: # TEST self.question_count == 0:
+            self.map[self.door_coords[0]][self.door_coords[1]] = CD['floor']
+        self.after(200, self.refresh_variables)
     
     def set_up_cvs(self):
         self.cvs = Canvas(self, bg='black')
@@ -374,6 +389,8 @@ class Game_manager(Tk, General_methods, Drawing_functions):
 
     def show_question_menu(self):
         self.cvs.destroy()
+        self.question_count -= 1
+        self.question_text.set('Questions: ' + str(self.question_count))
         question = self.return_question()
         self.rowconfigure(0, weight=4)
         for i in range(2):
@@ -404,11 +421,10 @@ class Game_manager(Tk, General_methods, Drawing_functions):
         return Question(current_question[0], current_question[1], current_question[2:])
     
     def correct_answer(self):
-        print('correct')
+        self.score += 300
         self.repair_map_view()
 
     def incorrect_answer(self):
-        print('incorrect')
         self.repair_map_view()
 
     def repair_map_view(self):
@@ -466,6 +482,9 @@ class Player_controler():
                     self.game_manager.map[self.x-1][self.y] = CD['floor']
                     self.unbind_keyboard()
                     self.game_manager.show_question_menu()
+                elif self.game_manager.map[self.x-1][self.y] == CD['game end']:
+                    self.game_manager.destroy()
+                    GameWin(self.game_manager.score, self.game_manager.category)
             case 'east':
                 if self.game_manager.map[self.x][self.y+1] == CD['floor']:
                     self.y+=1
@@ -473,6 +492,9 @@ class Player_controler():
                     self.game_manager.map[self.x][self.y+1]= CD['floor']
                     self.unbind_keyboard()
                     self.game_manager.show_question_menu()
+                elif self.game_manager.map[self.x][self.y+1] == CD['game end']:
+                    self.game_manager.destroy()
+                    GameWin(self.game_manager.score, self.game_manager.category)
             case 'south':
                 if self.game_manager.map[self.x+1][self.y] == CD['floor']:
                     self.x+=1
@@ -480,6 +502,9 @@ class Player_controler():
                     self.game_manager.map[self.x+1][self.y] = CD['floor']
                     self.unbind_keyboard()
                     self.game_manager.show_question_menu()
+                elif self.game_manager.map[self.x+1][self.y] == CD['game end']:
+                    self.game_manager.destroy()
+                    GameWin(self.game_manager.score, self.game_manager.category)
             case 'west':
                 if self.game_manager.map[self.x][self.y-1] == CD['floor']:
                     self.y-=1
@@ -487,6 +512,9 @@ class Player_controler():
                     self.game_manager.map[self.x][self.y-1] = CD['floor']
                     self.unbind_keyboard()
                     self.game_manager.show_question_menu()
+                elif self.game_manager.map[self.x][self.y-1] == CD['game_end']:
+                    self.game_manager.destroy()
+                    GameWin(self.game_manager.score, self.game_manager.category)
         self.draw_view()
 
     # Manages the players 'D' key input
@@ -513,22 +541,54 @@ class Question():
         self.incorrect_answers = incorrect_answers
 
 
-# Tells the player they have lost and returns to the main_screen
-class GameOver(Tk, General_methods):
-    def __init__(self, char_name):
-        super().__init__()
-        self.set_up_window('GAME OVER', 600, 600)
-        self.config(bg='black')
-        Button(self, text='YOU LOST', foreground='white', background='black', font='Helvetica 50', command=lambda: [self.destroy(), Main_screen(char_name)]).place(relx=.5, rely=.5, anchor=CENTER)
-
-
 # Tells the player they have won and returns to the Main_screen
 class GameWin(Tk, General_methods):
-    def __init__(self, char_name):
+    def __init__(self, score: int, category: str):
+        self.score = score
+        self.category = category
+        self.leaderboard_result_message = ''
+        self.compare_score_with_leaderboard()
         super().__init__()
         self.set_up_window('YOU WON', 600, 600)
-        self.config(bg='white')
-        Button(self, text='TRY AGAIN?', font='Helvetica 50', bg='white', command=lambda: [self.destroy(), Main_screen(char_name)]).place(relx=.5, rely=.5, anchor=CENTER)
+        Label(text='You won with a score of %d.' % score, background='white').pack()
+        Label(text=self.leaderboard_result_message, background='white').pack()
+    
+    def compare_score_with_leaderboard(self):
+        global player_name
+        leaderboard_list = self.return_leaderboard_list(self.category)
+        for entry in leaderboard_list:
+            if entry[0] == player_name:
+                if int(entry[1]) < self.score:
+                    leaderboard_list.remove(entry)
+                else:
+                    self.leaderboard_result_message = 'You didn\'t beat your previous score of ' + entry[1]
+                break
+        if self.leaderboard_result_message == '':
+            for entry in leaderboard_list:
+                if self.score > int(entry[1]):
+                    leaderboard_list.insert(leaderboard_list.index(entry), [player_name, self.score])
+                    self.leaderboard_result_message = 'You\'ve placed %d. on the leaderboard' % (leaderboard_list.index(entry))
+                    break
+        if self.leaderboard_result_message == '':
+            self.leaderboard_result_message = 'You didn\'t place on the leaderboard'
+        self.rewrite_leaderboard(self.category, leaderboard_list)
+        
+    def rewrite_leaderboard(self, category, leaderboard_list):
+        with open(os.path.join('assets', category, 'leaderboard.txt'), 'w') as leaderboard:
+            for i in range(10):
+                leaderboard.write(str(leaderboard_list[i][0]) + ';' + str(leaderboard_list[i][1]) + '\n')
+        
+    def return_leaderboard_list(self, category: str):
+        with open(os.path.join('assets', category, 'leaderboard.txt'), 'r') as leaderboard:
+            leaderboard_list = leaderboard.readlines()
+        temp = []
+        for entry in leaderboard_list:
+            temp.append(entry
+                        .strip()
+                        .split(';'))
+        leaderboard_list = temp
+        return leaderboard_list
+
 
 
 if __name__ == '__main__':
