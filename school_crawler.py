@@ -482,7 +482,7 @@ class Player_controler():
                     return
                 elif self.game_manager.map[self.x-1][self.y] == CD['game-end']:
                     self.game_manager.destroy()
-                    GameWin(self.game_manager.score, self.game_manager.category)
+                    Game_win(self.game_manager.score, self.game_manager.category)
                     return
             case 'east':
                 if self.game_manager.map[self.x][self.y+1] == CD['floor']:
@@ -494,7 +494,7 @@ class Player_controler():
                     return
                 elif self.game_manager.map[self.x][self.y+1] == CD['game-end']:
                     self.game_manager.destroy()
-                    GameWin(self.game_manager.score, self.game_manager.category)
+                    Game_win(self.game_manager.score, self.game_manager.category)
                     return
             case 'south':
                 if self.game_manager.map[self.x+1][self.y] == CD['floor']:
@@ -506,7 +506,7 @@ class Player_controler():
                     return
                 elif self.game_manager.map[self.x+1][self.y] == CD['game-end']:
                     self.game_manager.destroy()
-                    GameWin(self.game_manager.score, self.game_manager.category)
+                    Game_win(self.game_manager.score, self.game_manager.category)
                     return
             case 'west':
                 if self.game_manager.map[self.x][self.y-1] == CD['floor']:
@@ -518,7 +518,7 @@ class Player_controler():
                     return
                 elif self.game_manager.map[self.x][self.y-1] == CD['game-end']:
                     self.game_manager.destroy()
-                    GameWin(self.game_manager.score, self.game_manager.category)
+                    Game_win(self.game_manager.score, self.game_manager.category)
                     return
         self.draw_view()
 
@@ -547,7 +547,7 @@ class Question():
 
 
 # Tells the player they have won and returns to the Main_screen
-class GameWin(Tk, General_methods):
+class Game_win(Tk, General_methods):
     def __init__(self, score: int, category: str):
         self.score = score
         self.category = category
@@ -555,8 +555,11 @@ class GameWin(Tk, General_methods):
         self.compare_score_with_leaderboard()
         super().__init__()
         self.set_up_window('YOU WON', 600, 600)
-        Label(text='You won with a score of %d.' % score, background='white').pack()
-        Label(text=self.leaderboard_result_message, background='white').pack()
+        Label(text='GAME WIN', background='white', foreground='gold', font=('', 50, 'bold')).place(relx=.5, rely=.1, anchor=CENTER)
+        Label(text='You won with a score of %d.' % score, background='white', font=('', 15)).place(relx=.5, rely=.25, anchor=CENTER)
+        Label(text=self.leaderboard_result_message, background='white', font=('', 15)).place(relx=.5, rely=.30, anchor=CENTER)
+        Button(text='MENU', font=('', 15), command=lambda: (self.destroy(), Main_screen())).place(relx=.5, rely=.60, anchor=CENTER)
+        Button(text='PLAY AGAIN', font=('', 15), command=self.start_game).place(relx=.5, rely=.67, anchor=CENTER)
     
     def compare_score_with_leaderboard(self):
         global player_name
@@ -593,7 +596,11 @@ class GameWin(Tk, General_methods):
                         .split(';'))
         leaderboard_list = temp
         return leaderboard_list
-
+    
+    def start_game(self):
+        self.destroy()
+        game_manager = Game_manager(self.category)
+        Player_controler(game_manager)
 
 
 if __name__ == '__main__':
@@ -602,5 +609,5 @@ if __name__ == '__main__':
     char_login = Char_login()
     char_login.mainloop()
     '''
-    main_screen = Main_screen()
+    main_screen = Game_win(0, 'biology')
     main_screen.mainloop()
