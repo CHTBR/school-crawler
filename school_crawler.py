@@ -13,7 +13,7 @@ CELL_DESIGNATIONS = {
     'floor' : 1,
     'door' : 2,
     'question' : 3,
-    'game end' : 4
+    'game-end' : 4
 }
 CD = CELL_DESIGNATIONS # Shorter name for use in code
 
@@ -236,7 +236,7 @@ class Game_manager(Tk, General_methods, Drawing_functions):
         start_cell = [size-4, size//2] # Start for the pathfinder
         # Creates the boss room
         boss_room_y = randint(2, size-2) 
-        for a, b in zip((1, 2, 3), (CD['game end'], CD['door'], CD['floor'])):
+        for a, b in zip((1, 2, 3), (CD['game-end'], CD['door'], CD['floor'])):
             if b == CD['door']:
                 self.door_coords = [a, boss_room_y]
             grid[a][boss_room_y] = b
@@ -288,9 +288,6 @@ class Game_manager(Tk, General_methods, Drawing_functions):
             next_cell_x = current_cell_x
             next_cell_y = current_cell_y
             for counter in range(4): # Branch can be extended at most 3 times
-                for i in grid: # TEST
-                    print(i)
-                print('')
                 tmp_direction = choice(DIRECTIONS)
                 while (DIRECTIONS.index(tmp_direction)+2)%4 == DIRECTIONS.index(direction): # If new direction is opposite of current
                     tmp_direction = choice(DIRECTIONS)
@@ -319,7 +316,7 @@ class Game_manager(Tk, General_methods, Drawing_functions):
                     grid[current_cell_x][current_cell_y] = CD['floor']              
             grid[current_cell_x][current_cell_y] = CD['question']
         except Loop_Break_Exception:
-            print('BREAK') # TEST
+            pass
 
     def set_up_ui(self):
         Label(self, textvariable=self.score_text, background='black', font='Helvetica 30', foreground='yellow').place(x=300, y=30, anchor=CENTER)
@@ -482,9 +479,11 @@ class Player_controler():
                     self.game_manager.map[self.x-1][self.y] = CD['floor']
                     self.unbind_keyboard()
                     self.game_manager.show_question_menu()
-                elif self.game_manager.map[self.x-1][self.y] == CD['game end']:
+                    return
+                elif self.game_manager.map[self.x-1][self.y] == CD['game-end']:
                     self.game_manager.destroy()
                     GameWin(self.game_manager.score, self.game_manager.category)
+                    return
             case 'east':
                 if self.game_manager.map[self.x][self.y+1] == CD['floor']:
                     self.y+=1
@@ -492,9 +491,11 @@ class Player_controler():
                     self.game_manager.map[self.x][self.y+1]= CD['floor']
                     self.unbind_keyboard()
                     self.game_manager.show_question_menu()
-                elif self.game_manager.map[self.x][self.y+1] == CD['game end']:
+                    return
+                elif self.game_manager.map[self.x][self.y+1] == CD['game-end']:
                     self.game_manager.destroy()
                     GameWin(self.game_manager.score, self.game_manager.category)
+                    return
             case 'south':
                 if self.game_manager.map[self.x+1][self.y] == CD['floor']:
                     self.x+=1
@@ -502,9 +503,11 @@ class Player_controler():
                     self.game_manager.map[self.x+1][self.y] = CD['floor']
                     self.unbind_keyboard()
                     self.game_manager.show_question_menu()
-                elif self.game_manager.map[self.x+1][self.y] == CD['game end']:
+                    return
+                elif self.game_manager.map[self.x+1][self.y] == CD['game-end']:
                     self.game_manager.destroy()
                     GameWin(self.game_manager.score, self.game_manager.category)
+                    return
             case 'west':
                 if self.game_manager.map[self.x][self.y-1] == CD['floor']:
                     self.y-=1
@@ -512,9 +515,11 @@ class Player_controler():
                     self.game_manager.map[self.x][self.y-1] = CD['floor']
                     self.unbind_keyboard()
                     self.game_manager.show_question_menu()
-                elif self.game_manager.map[self.x][self.y-1] == CD['game_end']:
+                    return
+                elif self.game_manager.map[self.x][self.y-1] == CD['game-end']:
                     self.game_manager.destroy()
                     GameWin(self.game_manager.score, self.game_manager.category)
+                    return
         self.draw_view()
 
     # Manages the players 'D' key input
