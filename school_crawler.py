@@ -143,7 +143,7 @@ class Main_screen(Tk, General_methods):
         self.leaderboard_list_window = self.return_configured_grid(self.leaderboard_list_window, 12, 2)
         list_header_lbl = Label(self.leaderboard_list_window, text=category.capitalize(), borderwidth=2, relief='solid').grid(row=0, column=0, columnspan=2, sticky=FILL_GRID)
         leaderboard_list = self.return_leaderboard_list(category)
-        for i in range(10):
+        for i in range(len(leaderboard_list)):
             player_name_lbl = Label(self.leaderboard_list_window, text=str(leaderboard_list[i][0]), borderwidth=1, relief='solid').grid(row=i+1, column=0, sticky=FILL_GRID)
             player_score_lbl = Label(self.leaderboard_list_window, text=str(leaderboard_list[i][1]), borderwidth=1, relief='solid').grid(row=i+1, column=1, sticky=FILL_GRID)
         return_button = Button(self.leaderboard_list_window, text='BACK', command=lambda: [self.leaderboard_list_window.destroy(), self.choose_category(self.show_leaderboard)]).grid(row=11, column=0, columnspan=2, sticky=FILL_GRID)
@@ -224,7 +224,6 @@ class Game_manager(Tk, General_methods, Drawing_functions):
                     if self.question_count <= 10:
                         return tmp_grid
         
-
     def return_square_grid(self, length_of_side: int):
         grid=[]
         for i in range(length_of_side):
@@ -578,7 +577,7 @@ class Game_win(Tk, General_methods):
                 if int(entry[1]) < self.score:
                     leaderboard_list.remove(entry)
                 else:
-                    self.leaderboard_result_message = 'You didn\'t beat your previous score of ' + entry[1]
+                    self.leaderboard_result_message = 'You didn\'t beat your previous score of ' + str(entry[1])
                 break
         if self.leaderboard_result_message == '':
             for entry in leaderboard_list:
@@ -588,11 +587,14 @@ class Game_win(Tk, General_methods):
                     break
         if self.leaderboard_result_message == '':
             self.leaderboard_result_message = 'You didn\'t place on the leaderboard'
+        if len(leaderboard_list) == 0:
+            self.leaderboard_result_message = 'You\'ve placed 1. on the leaderboard'
+            leaderboard_list.append([player_name, self.score])
         self.rewrite_leaderboard(self.category, leaderboard_list)
         
     def rewrite_leaderboard(self, category, leaderboard_list):
         with open(os.path.join('assets', category, 'leaderboard.txt'), 'w') as leaderboard:
-            for i in range(10):
+            for i in range(len(leaderboard_list)):
                 leaderboard.write(str(leaderboard_list[i][0]) + ';' + str(leaderboard_list[i][1]) + '\n')
         
     def return_leaderboard_list(self, category: str):
