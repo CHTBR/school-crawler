@@ -186,6 +186,7 @@ class Game_manager(Tk, General_methods, Drawing_functions):
         super().__init__()
         self.category = category
         self.get_images()
+        self.question_list = self.return_question_list()
         self.set_up_window('Dungeon', 600, 600)
         self.set_up_cvs()
         self.player = Player_controler
@@ -210,7 +211,7 @@ class Game_manager(Tk, General_methods, Drawing_functions):
         Creates a path through said grid from the spawn to the boss.
         Creates branches from that path and puts enemies at their ends.
         '''
-        
+
         grid = self.return_square_grid(25)
         while True:
             tmp_grid = self.return_map(grid)
@@ -386,6 +387,16 @@ class Game_manager(Tk, General_methods, Drawing_functions):
         self.evaluate_cell(self.map[player_x+left][player_y], 'Left')
         self.evaluate_cell(self.map[player_x+right][player_y], 'Right')
 
+    def return_question_list(self):
+        with open(os.path.join('assets', self.category, 'questions.txt'), 'r') as questions_file:
+            question_list = questions_file.readlines()
+        tmp_list = []
+        for question in question_list:
+            tmp_list.append((question
+                            .strip()
+                            .split(';')))
+        return tmp_list
+
     def show_question_menu(self):
         self.cvs.destroy()
         self.question_count -= 1
@@ -411,13 +422,9 @@ class Game_manager(Tk, General_methods, Drawing_functions):
             Button(text=current_answer, command=current_command).grid(row=row_num, column=col_num, sticky=FILL_GRID)
 
     def return_question(self):
-        with open(os.path.join('assets', self.category, 'questions.txt'), 'r') as questions_file:
-            all_questions = questions_file.readlines()
-        current_question = choice(all_questions)
-        current_question = (current_question
-                            .strip()
-                            .split(';'))
-        return Question(current_question[0], current_question[1], current_question[2:])
+        question = choice(self.question_list)
+        self.question_list.remove(question)
+        return Question(question[0], question[1], question[2:])
     
     def correct_answer(self):
         self.score += 300
