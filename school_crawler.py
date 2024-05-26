@@ -192,10 +192,6 @@ class Game_manager(Tk, General_methods, Drawing_functions):
         self.question_count = 0
         self.question_text = StringVar()
         self.map = self.create_map()
-        for a in range(len(self.map)):
-            for b in range(len(self.map[a])):
-                if self.map[a][b] == 3:
-                    self.question_count += 1
         self.question_text.set('Questions: ' + str(self.question_count))
         self.score = 5002
         self.score_text = StringVar()
@@ -203,8 +199,8 @@ class Game_manager(Tk, General_methods, Drawing_functions):
         self.set_up_ui()
         
     def get_images(self):
-        self.img = PhotoImage(file='assets/tmp.png', width=200, height=200)
-        self.big_img = PhotoImage(file='assets/tmp_big.png', width=400, height=400)
+        self.big_img = PhotoImage(file=os.path.join('assets', self.category, 'img.png'), width=400, height=400)
+        self.img = self.big_img.subsample(2)
 
     def create_map(self):
         '''
@@ -214,13 +210,19 @@ class Game_manager(Tk, General_methods, Drawing_functions):
         Creates a path through said grid from the spawn to the boss.
         Creates branches from that path and puts enemies at their ends.
         '''
-
+        
         grid = self.return_square_grid(25)
         while True:
             tmp_grid = self.return_map(grid)
             for x in range(len(tmp_grid)):
                 if CD['question'] in tmp_grid[x]:
-                    return tmp_grid
+                    for a in range(len(tmp_grid)):
+                        for b in range(len(tmp_grid[a])):
+                            if tmp_grid[a][b] == CD['question']:
+                                self.question_count += 1
+                    if self.question_count <= 10:
+                        return tmp_grid
+        
 
     def return_square_grid(self, length_of_side: int):
         grid=[]
@@ -328,7 +330,7 @@ class Game_manager(Tk, General_methods, Drawing_functions):
         else:
             self.score -= 2
         self.score_text.set('Score: ' + str(self.score))
-        if True: # TEST self.question_count == 0:
+        if self.question_count == 0:
             self.map[self.door_coords[0]][self.door_coords[1]] = CD['floor']
         self.after(200, self.refresh_variables)
     
@@ -606,7 +608,7 @@ class Game_win(Tk, General_methods):
 if __name__ == '__main__':
     # Start of the program
     ''' TEST
-    char_login = Char_login()
+    char_login = Player_login()
     char_login.mainloop()
     '''
     main_screen = Game_win(0, 'biology')
