@@ -1,10 +1,15 @@
-bioQuestion1;correct;wrong;wrong;wrong
-bioQuestion2;correct;wrong;wrong;wrong
-bioQuestion3;correct;wrong;wrong;wrong
-bioQuestion4;correct;wrong;wrong;wrong
-bioQuestion5;correct;wrong;wrong;wrong
-bioQuestion6;correct;wrong;wrong;wrong
-bioQuestion7;correct;wrong;wrong;wrong
-bioQuestion8;correct;wrong;wrong;wrong
-bioQuestion9;correct;wrong;wrong;wrong
-bioQuestion10;correct;wrong;wrong;wrong
+What is the powerhouse of the cell?;Mitochondrion;Nucleus;Ribosome;Chloroplast
+What is the basic unit of heredity?;Gene;Chromosome;DNA;RNA
+Which process do plants use to convert sunlight into food?;Photosynthesis;Fermentation;Respiration;Transpiration
+Which blood cells are responsible for fighting infections?;White blood cells;Red blood cells;Platelets;Plasma cells
+Which part of the brain is responsible for coordinating muscle movements and balance?;Cerebellum;Cerebrum;Thalamus;Medulla oblongata
+What is the main component of the plant cell wall?;Cellulose;Chitin;Lignin;Pectin
+Which of the following is an example of a prokaryotic organism?;Bacteria;Amoeba;Algae;Fungi
+What is the process by which a cell divides into two daughter cells?;Mitosis;Meiosis;Cytokinesis;Binary fission
+Which organ is primarily responsible for filtering blood in the human body?;Kidney;Heart;Liver;Spleen
+What is the basic building block of proteins?;Amino acids;Monosaccharides;Nucleotides;Fatty acids
+What is the function of hemoglobin in the blood?;Transport oxygen;Fight infections;Clot blood;Digest fats
+What type of organism is yeast?;Fungus;Bacterium;Alga;Protozoan
+Which hormone regulates blood sugar levels?;Insulin;Thyroxine;Adrenaline;Estrogen
+What is the largest artery in the human body?;Aorta;Carotid artery;Femoral artery;Pulmonary artery
+What is the term for the process by which plants lose water vapor through their leaves?;Transpiration;Photosynthesis;Respiration;Germination

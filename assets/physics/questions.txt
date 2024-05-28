@@ -1,10 +1,15 @@
-phyQuestion1;correct;wrong;wrong;wrong
-phyQuestion2;correct;wrong;wrong;wrong
-phyQuestion3;correct;wrong;wrong;wrong
-phyQuestion4;correct;wrong;wrong;wrong
-phyQuestion5;correct;wrong;wrong;wrong
-phyQuestion6;correct;wrong;wrong;wrong
-phyQuestion7;correct;wrong;wrong;wrong
-phyQuestion8;correct;wrong;wrong;wrong
-phyQuestion9;correct;wrong;wrong;wrong
-phyQuestion10;correct;wrong;wrong;wrong
+What formula does the Newton's 2nd law describe?;F=m*a;E=1/2*m*v^2;Fₐᵥ=Fᵥₐ;w=F*s
+What is the SI unit of electric current?;Ampere;Ohm;Volt;Coulomb
+Which of the following is a scalar quantity?;Temperature;Velocity;Acceleration;Force
+What is the speed of light in a vacuum?;3 x 10^8 m/s;3 x 10^6 m/s;3 x 10^10 m/s;3 x 10^12 m/s
+What is the gravitational acceleration on the surface of the Earth?;9.8 m/s^2;8.9 m/s^2;10.8 m/s^2;11.8 m/s^2
+Who formulated the laws of motion?;Isaac Newton;Albert Einstein;Galileo Galilei;Niels Bohr
+Which of the following particles is electrically neutral?;Neutron;Electron;Proton;Positron
+In an AC circuit, what does the 'A' stand for in AC?;Alternating;Amplified;Asynchronous;Attenuated
+Which of the following best describes the concept of entropy?;Measure of disorder or randomness;Measure of energy available for work;Measure of force exerted;Measure of gravitational pull
+What is the main principle behind the operation of a lever?;Principle of moments;Newton's first law;Conservation of momentum;Archimedes' principle
+What is the primary source of energy for the Sun?;Nuclear fusion;Nuclear fission;Chemical reactions;Gravitational contraction
+What is the unit of frequency?;Hertz;Joule;Newton;Watt
+Which quantity is conserved in an elastic collision?;Both kinetic energy and momentum;Kinetic energy;Momentum;Neither kinetic energy nor momentum
+What is the term for the bending of light as it passes from one medium to another?;Refraction;Reflection;Diffraction;Dispersion
+What is the force that opposes the motion of objects through air?;Air resistance;Gravity;Friction;Tension

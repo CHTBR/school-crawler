@@ -1,10 +1,15 @@
-cheQuestion1;correct;wrong;wrong;wrong
-cheQuestion2;correct;wrong;wrong;wrong
-cheQuestion3;correct;wrong;wrong;wrong
-cheQuestion4;correct;wrong;wrong;wrong
-cheQuestion5;correct;wrong;wrong;wrong
-cheQuestion6;correct;wrong;wrong;wrong
-cheQuestion7;correct;wrong;wrong;wrong
-cheQuestion8;correct;wrong;wrong;wrong
-cheQuestion9;correct;wrong;wrong;wrong
-cheQuestion10;correct;wrong;wrong;wrong
+What is the chemical symbol for gold?;Au;Ag;Ga;Gd
+What is the pH of a neutral solution at 25°C?;7;14;0;1
+Which of the following is an alkaline earth metal?;Magnesium;Sodium;Iron;Copper
+What is the main component of natural gas?;Methane;Ethane;Propane;Butane
+What type of bond involves the sharing of electron pairs between atoms?;Covalent bond;Ionic bond;Metallic bond;Hydrogen bond
+What is the chemical formula for table salt?;NaCl;KCl;Na₂SO₄;CaCl₂
+Which of the following elements is a noble gas?;Helium;Hydrogen;Nitrogen;Oxygen
+What is the main element in organic compounds?;Carbon;Hydrogen;Nitrogen;Oxygen
+Which element has the highest electronegativity?;Fluorine;Chlorine;Oxygen;Nitrogen
+What type of reaction involves the loss of electrons?;Oxidation;Reduction;Precipitation;Neutralization
+Which process is used to separate a liquid from a solution?;Distillation;Filtration;Crystallization;Sedimentation
+What is the common name for dihydrogen monoxide?;Water;Hydrogen peroxide;Table salt;Ammonia
+What is Avogadro's number?;6.022×10^20;6.022×10^23;6.022×10^26;6.022×10^29
+What is the main constituent of natural diamonds?;Carbon;Silicon;Calcium;Nitrogen
+Which acid is found in vinegar?;Acetic acid;Citric acid;Hydrochloric acid;Lactic acid

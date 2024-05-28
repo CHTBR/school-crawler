@@ -2,7 +2,7 @@ from drawing_functions import Drawing_functions
 
 from tkinter import *
 from random import *
-import os
+import os, time
 
 
 # Constants declarations
@@ -211,18 +211,15 @@ class Game_manager(Tk, General_methods, Drawing_functions):
         Creates a path through said grid from the spawn to the boss.
         Creates branches from that path and puts enemies at their ends.
         '''
-
-        grid = self.return_square_grid(25)
+        
         while True:
+            grid = self.return_square_grid(25)
+            self.question_count = 0
             tmp_grid = self.return_map(grid)
-            for x in range(len(tmp_grid)):
-                if CD['question'] in tmp_grid[x]:
-                    for a in range(len(tmp_grid)):
-                        for b in range(len(tmp_grid[a])):
-                            if tmp_grid[a][b] == CD['question']:
-                                self.question_count += 1
-                    if self.question_count <= 10:
-                        return tmp_grid
+            for row in tmp_grid:
+                self.question_count += row.count(CD['question'])
+            if self.question_count >= 6 and self.question_count <= 15:
+                return tmp_grid
         
     def return_square_grid(self, length_of_side: int):
         grid=[]
